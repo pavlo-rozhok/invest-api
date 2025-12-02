@@ -1,12 +1,12 @@
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 
-import { usersService } from './users.service'
-import { userResponseSchema } from './dto/response/user.response.dto'
-import { createUserRequestSchema } from './dto/request/create-user.request.dto'
+import { usersService } from './users.service';
+import { userResponseSchema } from './dto/response/user.response.dto';
+import { createUserRequestSchema } from './dto/request/create-user.request.dto';
 
-export const usersRoutes = new OpenAPIHono()
+export const usersRoutes = new OpenAPIHono();
 
-const CONTROLLER_TAG = 'Users'
+const CONTROLLER_TAG = 'Users';
 
 usersRoutes.openapi(
   createRoute({
@@ -25,10 +25,10 @@ usersRoutes.openapi(
     tags: [CONTROLLER_TAG],
   }),
   async (c) => {
-    const users = await usersService.getAll()
-    return c.json(users)
+    const users = await usersService.getAll();
+    return c.json(users);
   },
-)
+);
 
 usersRoutes.openapi(
   createRoute({
@@ -59,8 +59,8 @@ usersRoutes.openapi(
     tags: [CONTROLLER_TAG],
   }),
   async (c) => {
-    const data = c.req.valid('json')
-    const newUser = await usersService.create(data)
-    return c.json(newUser, 201)
+    const data = c.req.valid('json');
+    const newUser = await usersService.create(data);
+    return c.json(newUser, 201);
   },
-)
+);

@@ -1,13 +1,13 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
-import { NodeEnvsEnum } from './models/enums/node-envs.enum.js'
-import { LogLevelsEnum } from './models/enums/log-levels.enum.js'
+import { NodeEnvsEnum } from './models/enums/node-envs.enum';
+import { LogLevelsEnum } from './models/enums/log-levels.enum';
 
 const getBooleanValidation = ({ defaultValue }: { defaultValue: boolean }) =>
   z
     .enum(['false', 'true'])
     .default(defaultValue ? 'true' : 'false')
-    .transform((is) => (is === 'true' ? true : false))
+    .transform((is) => (is === 'true' ? true : false));
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(NodeEnvsEnum).default(NodeEnvsEnum.DEVELOPMENT),
@@ -15,19 +15,19 @@ const EnvSchema = z.object({
   LOG_LEVEL: z.enum(LogLevelsEnum).default(LogLevelsEnum.INFO),
   ENABLE_METRICS: getBooleanValidation({ defaultValue: true }),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-})
+});
 
-const parsed = EnvSchema.safeParse(process.env)
+const parsed = EnvSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('\n❌ Invalid environment variables:')
+  console.error('\n❌ Invalid environment variables:');
   for (const issue of parsed.error.issues) {
-    console.error(`• ${issue.path.join('.')}: ${issue.message}`)
+    console.error(`• ${issue.path.join('.')}: ${issue.message}`);
   }
-  process.exit(1)
+  process.exit(1);
 }
 
-const parsedData = parsed.data
+const parsedData = parsed.data;
 
 export const config = {
   database: {
@@ -48,4 +48,4 @@ export const config = {
   metrics: {
     isEnabled: parsedData.ENABLE_METRICS,
   },
-}
+};
