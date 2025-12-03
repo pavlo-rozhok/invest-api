@@ -1,4 +1,4 @@
-import { errorMessages } from '../../errors/error-messages';
+import { errorMessages } from '../../error-handling/error-messages';
 import { ErrorCodesEnum } from '../enums/error-codes.enum';
 
 export class ApiUserError {

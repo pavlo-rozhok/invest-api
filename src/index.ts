@@ -5,7 +5,7 @@ import { usersRoutes } from './modules/users/users.routes';
 import { config } from './common/config';
 import { requestIdMiddleware } from './common/middlewares/request-id.middleware';
 import { logMiddleware } from './common/middlewares/logger.middleware';
-import { onGlobalError } from './common/errors/on-global-error';
+import { onGlobalError } from './common/error-handling/on-global-error';
 import { addSwaggerEndPoints } from './common/swagger';
 
 const app = new OpenAPIHono();

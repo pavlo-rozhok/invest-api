@@ -3,7 +3,7 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { usersService } from './users.service';
 import { userResponseSchema } from './dto/response/user.response.dto';
 import { createUserRequestSchema } from './dto/request/create-user.request.dto';
-import { zodErrorHook } from '../../common/errors/zod-error.hook';
+import { zodErrorHook } from '../../common/error-handling/zod-error.hook';
 
 export const usersRoutes = new OpenAPIHono({ defaultHook: zodErrorHook });
 
