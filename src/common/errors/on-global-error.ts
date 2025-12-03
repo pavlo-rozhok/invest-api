@@ -8,15 +8,16 @@ import { ApiUserError } from '../models/errors/api-user-error';
 export const onGlobalError = (err: Error | HTTPResponseError, c: Context) => {
   const isHightLevelNotifying = err instanceof ApiError ? err.isHightLevelNotifying : true;
 
-  if (isHightLevelNotifying) {
-    //
-  }
-
   const loggerError = {
     path: `${c.req.method}: ${c.req.path}`,
     requestId: c.get('requestId'),
+    stack: err.stack,
     ...err,
   };
+
+  if (isHightLevelNotifying) {
+    //
+  }
 
   if (err instanceof ApiError && err.statusCode < 500) {
     logger.warn({
@@ -24,10 +25,7 @@ export const onGlobalError = (err: Error | HTTPResponseError, c: Context) => {
       stack: undefined,
     });
   } else {
-    logger.error({
-      ...loggerError,
-      stack: err.stack,
-    });
+    logger.error(loggerError);
   }
 
   if (err instanceof ApiError) {
