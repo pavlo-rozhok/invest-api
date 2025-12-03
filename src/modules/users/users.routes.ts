@@ -3,9 +3,9 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { usersService } from './users.service';
 import { userResponseSchema } from './dto/response/user.response.dto';
 import { createUserRequestSchema } from './dto/request/create-user.request.dto';
-import { zodErrorInterceptor } from '../../common/errors/zod-error.interseptor';
+import { zodErrorHook } from '../../common/errors/zod-error.hook';
 
-export const usersRoutes = new OpenAPIHono({ defaultHook: zodErrorInterceptor });
+export const usersRoutes = new OpenAPIHono({ defaultHook: zodErrorHook });
 
 const CONTROLLER_TAG = 'Users';
 
@@ -26,6 +26,7 @@ usersRoutes.openapi(
     tags: [CONTROLLER_TAG],
   }),
   async (c) => {
+    await new Promise((res) => setTimeout(res, 1000));
     const users = await usersService.getAll();
     return c.json(users);
   },
@@ -60,8 +61,9 @@ usersRoutes.openapi(
     tags: [CONTROLLER_TAG],
   }),
   async (c) => {
+    await new Promise((res) => setTimeout(res, 1000));
     const data = c.req.valid('json');
-    const newUser = await usersService.create(data);
-    return c.json(newUser, 201);
+    const created = await usersService.create(data);
+    return c.json(created, 201);
   },
 );
