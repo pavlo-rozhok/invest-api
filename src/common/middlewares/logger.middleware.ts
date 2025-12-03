@@ -15,7 +15,7 @@ export const logMiddleware = (options?: { excludePaths?: string[]; isEnabled?: b
   return createMiddleware(async (c, next) => {
     const path = `${c.req.method}: ${c.req.path}`;
     const requestId = c.get('requestId');
-    if (excludePaths.includes(path)) {
+    if (excludePaths.includes(c.req.path)) {
       return next();
     }
 
