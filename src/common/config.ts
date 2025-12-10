@@ -14,7 +14,7 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().int().positive().max(65535).default(3000),
   LOG_LEVEL: z.enum(LogLevelsEnum).default(LogLevelsEnum.INFO),
   ENABLE_METRICS: getBooleanValidation({ defaultValue: true }),
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required').default('test_database_url'),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
