@@ -23,6 +23,10 @@ app.notFound((c) => c.json({ message: 'Route not found' }, 404));
 
 app.route('/users', usersRoutes);
 
+app.get('/health', (c) => {
+  return c.json({ status: 'ok' });
+});
+
 addSwaggerEndPoints(app);
 
 serve(

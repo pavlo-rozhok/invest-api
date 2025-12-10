@@ -1,0 +1,89 @@
+name: API Deploy
+
+run-name: API Deploy to ${{ github.event.inputs.env }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment to deploy"
+        required: true
+        type: choice
+        options:
+          - sandbox
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment: ${{ github.event.inputs.env }}
+
+    env:
+      AWS_REGION: eu-central-1
+      DEPLOY_ENV: ${{ github.event.inputs.env }}
+      PROJECT_NAMESPACE: ${{ vars.PROJECT_NAMESPACE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --- Docker Setup & ECR Login ---
+
+      - name: Configure AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # This secret must be set in GitHub secrets and contain the ARN from the deploy_api_role_arn output
+          role-to-assume: ${{ secrets.DEPLOY_API_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # --- Read SSM Parameters ---
+
+      - name: Read SSM parameters for API
+        id: ssm
+        run: |
+          PARAM_PREFIX="/${{ env.PROJECT_NAMESPACE }}-${{ env.DEPLOY_ENV }}/api"
+
+          ECR_URI=$(aws ssm get-parameter --name "${PARAM_PREFIX}/ecr_uri" --query "Parameter.Value" --output text)
+          SERVICE_NAME=$(aws ssm get-parameter --name "${PARAM_PREFIX}/service_name" --query "Parameter.Value" --output text)
+          CLUSTER_NAME=$(aws ssm get-parameter --name "${PARAM_PREFIX}/cluster_name" --query "Parameter.Value" --output text)
+
+          echo "ecr_uri=${ECR_URI}" >> $GITHUB_OUTPUT
+          echo "service_name=${SERVICE_NAME}" >> $GITHUB_OUTPUT
+          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
+
+      # --- Build and Push Image ---
+
+      - name: Set up Docker BuildX
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set image tag (using short SHA)
+        id: image_tag
+        run: echo "TAG=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # Push with SHA tag and 'latest' tag
+          tags: ${{ steps.ssm.outputs.ecr_uri }}:${{ steps.image_tag.outputs.TAG }},${{ steps.ssm.outputs.ecr_uri }}:latest
+          platforms: linux/amd64
+
+      # --- ECS Deployment ---
+
+      - name: Update ECS service to deploy the new image
+        run: |
+          # Force a new deployment. ECS will pull the new 'latest' image.
+          # For a more robust deployment, consider updating the Task Definition with the specific SHA tag first.
+          aws ecs update-service \
+            --cluster ${{ steps.ssm.outputs.cluster_name }} \
+            --service ${{ steps.ssm.outputs.service_name }} \
+            --force-new-deployment
