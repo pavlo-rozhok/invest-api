@@ -8,6 +8,9 @@ const getBooleanValidation = ({ defaultValue }: { defaultValue: boolean }) =>
     .enum(['false', 'true'])
     .default(defaultValue ? 'true' : 'false')
     .transform((is) => (is === 'true' ? true : false));
+console.log(process.env.NODE_ENV);
+
+process.env.NODE_ENV = NodeEnvsEnum.PRODUCTION;
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(NodeEnvsEnum).default(NodeEnvsEnum.DEVELOPMENT),
