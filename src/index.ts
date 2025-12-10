@@ -14,7 +14,7 @@ app.use(requestIdMiddleware);
 app.use(
   logMiddleware({
     isEnabled: !config.env.isTest,
-    excludePaths: ['/ui', '/doc'],
+    excludePaths: ['/ui', '/doc', '/health'],
   }),
 );
 
